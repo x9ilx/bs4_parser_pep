@@ -1,6 +1,6 @@
-import pytest
-
 from pathlib import Path
+
+import pytest
 
 BASE_DIR = Path(__name__).absolute().parent
 MAIN_DIR = BASE_DIR / 'src'
@@ -14,9 +14,7 @@ def results_dir():
 
 
 def test_results_dir_exists(results_dir):
-    assert len(results_dir), (
-        'Не обнаружена папка /results'
-    )
+    assert len(results_dir), 'Не обнаружена папка /results'
 
 
 def test_csv_files(results_dir):

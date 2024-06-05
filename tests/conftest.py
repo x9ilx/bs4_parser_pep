@@ -1,12 +1,12 @@
-import pytest
 import sys
-from pathlib import Path
-from bs4 import BeautifulSoup
-import requests_mock
 from argparse import Namespace
+from pathlib import Path
 from typing import List, Tuple
 
-from requests_cache import CachedSession, ALL_METHODS
+import pytest
+import requests_mock
+from bs4 import BeautifulSoup
+from requests_cache import ALL_METHODS, CachedSession
 from requests_mock import Adapter
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -21,7 +21,7 @@ PEP_URL = 'https://www.python.org/dev/peps/'
 precode_files = ['constants.py', 'main.py', 'utils.py']
 src_dir_files = [file.name for file in SRC_DIR.rglob('*.py')]
 try:
-    from src import utils, configs, main
+    from src import configs, main, utils
 except (ImportError, ModuleNotFoundError, NameError):
     for file in precode_files:
         assert file in src_dir_files, f'Отсутсвует файл {file}'
@@ -78,6 +78,7 @@ def response_page(mock_session):
         response = mock_session.get(page)
         response.encoding = 'utf-8'
         return response.text
+
     return _response_page
 
 
@@ -107,6 +108,8 @@ def converting(what_convert: List[Tuple[List[int]]]) -> List[Tuple]:
 def records():
     def _records(mode: str):
         from tests.fixture_data.results import results
+
         result = results[mode]
         return converting(result)
+
     return _records

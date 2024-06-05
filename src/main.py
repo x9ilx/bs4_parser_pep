@@ -177,10 +177,11 @@ def pep(session):
     if len(mismatched_statuses) > 0:
         logging.info('Несовпадающие статусы:')
         for pep in mismatched_statuses:
+            table_statuses = ', '.join(pep["table_status"])
             logging.info(pep['link'])
             logging.info(f'Статус в карточке: {pep["page_status"]}')
             logging.info(
-                f'Ожидаемые статусы: {', '.join(pep["table_status"])}'
+                f'Ожидаемые статусы: {table_statuses}'
             )
 
     results.append(('Total', len(different_peps)),)

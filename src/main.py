@@ -178,9 +178,9 @@ def pep(session):
         logging.info('Несовпадающие статусы:')
         for pep in mismatched_statuses:
             logging.info(pep['link'])
-            logging.info(f'Статус в карточке: {pep['page_status']}')
+            logging.info(f'Статус в карточке: {pep["page_status"]}')
             logging.info(
-                f'Ожидаемые статусы: {', '.join(pep['table_status'])}'
+                f'Ожидаемые статусы: {', '.join(pep["table_status"])}'
             )
 
     results.append(('Total', len(different_peps)),)

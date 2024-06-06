@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
 from constants import BASE_DIR, EXPECTED_STATUS, MAIN_DOC_URL, MAIN_PEP_URL
+from exceptions import ParserFindTagException
 from outputs import control_output
 from utils import find_tag, get_response
 
@@ -32,7 +33,7 @@ def whats_new(session):
         version_a_tag = find_tag(li, 'a')
         href = version_a_tag['href']
         full_url = urljoin(whats_new_url, href)
-        response = session.get(full_url)
+        response = get_response(session, full_url)
         response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, features='lxml')
         h1 = find_tag(soup, 'h1')
@@ -96,7 +97,7 @@ def download(session):
     archive_path = download_dir / file_name
     Path.mkdir(download_dir, exist_ok=True)
 
-    response = session.get(download_link)
+    response = get_response(session, download_link)
     with open(archive_path, 'wb') as file:
         file.write(response.content)
     logging.info(f'Архив был загружен и сохранён: {archive_path}')
@@ -122,10 +123,12 @@ def __get_different_peps(session):
 
         for tr in tr_list:
             first_td = find_tag(tr, 'td')
-            abbr_tag = first_td.find('abbr')
-            preview_status = ''
-            if abbr_tag is not None:
+
+            try:
+                abbr_tag = find_tag(first_td, 'abbr')
                 preview_status = abbr_tag.text[1:]
+            except ParserFindTagException:
+                preview_status = ''
 
             second_td = first_td.find_next_sibling('td')
             a_tag = find_tag(second_td, 'a', attrs={'class': 'pep'})
@@ -162,30 +165,23 @@ def pep(session):
         pep_type_count[status] += 1
 
         if status not in pep.statuses:
+            table_statuses = ', '.join(pep.statuses)
             mismatched_statuses.append(
-                {
-                    'table_status': pep.statuses,
-                    'page_status': status,
-                    'link': pep.link,
-                }
+                (
+                    f'\n{pep.link}\n'
+                    f'Статус в карточке: {status}\n'
+                    f'Ожидаемые статусы: {table_statuses}'
+                )
             )
 
-    pep_type_count = dict(sorted(pep_type_count.items()))
-    for pep_status, pep_count in pep_type_count.items():
-        results.append(
-            (pep_status, pep_count),
-        )
+    results.extend(pep_type_count.items())
 
     if len(mismatched_statuses) > 0:
         logging.info('Несовпадающие статусы:')
-        for pep in mismatched_statuses:
-            table_statuses = ', '.join(pep['table_status'])
-            logging.info(pep['link'])
-            logging.info(f'Статус в карточке: {pep["page_status"]}')
-            logging.info(f'Ожидаемые статусы: {table_statuses}')
+        logging.info('\n'.join(mismatched_statuses))
 
     results.append(
-        ('Total', len(different_peps)),
+        ('Total', sum(pep_type_count.values())),
     )
     return results
 

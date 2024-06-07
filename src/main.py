@@ -64,10 +64,10 @@ def latest_versions(session):
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
 
-    for a in a_tags:
-        link = a['href']
-        re_match = re.search(pattern, a.text)
-        version = a.text
+    for a_tag in a_tags:
+        link = a_tag['href']
+        re_match = re.search(pattern, a_tag.text)
+        version = a_tag.text
         status = ''
 
         if re_match:
@@ -104,7 +104,6 @@ def download(session):
 
 
 def __get_different_peps(session):
-    different_peps = set()
     PEPItem = namedtuple('pep', ['statuses', 'link'])
     response = get_response(session, MAIN_PEP_URL)
     if response is None:
@@ -114,6 +113,7 @@ def __get_different_peps(session):
 
     soup = BeautifulSoup(response.text, features='lxml')
     pep_tables = soup.find_all('table', class_='pep-zero-table')
+    different_peps = set()
 
     for table in tqdm(pep_tables, desc='Анализ таблиц со списком PEP'):
         tbody_tag = find_tag(table, 'tbody')
